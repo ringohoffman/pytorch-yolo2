@@ -50,7 +50,7 @@ steps         = [float(step) for step in net_options['steps'].split(',')]
 scales        = [float(scale) for scale in net_options['scales'].split(',')]
 
 #Train parameters
-max_epochs    = max_batches*batch_size/nsamples+1
+max_epochs    = max_batches*batch_size//nsamples+1
 use_cuda      = True
 seed          = int(time.time())
 eps           = 1e-5

@@ -388,13 +388,9 @@ def scale_bboxes(bboxes, width, height):
       
 def file_lines(thefilepath):
     count = 0
-    thefile = open(thefilepath, 'rb')
-    while True:
-        buffer = thefile.read(8192*1024)
-        if not buffer:
-            break
-        count += buffer.count('\n')
-    thefile.close( )
+    with open(thefilepath, 'r') as f:
+        for line in f:
+            count += 1
     return count
 
 def get_image_size(fname):

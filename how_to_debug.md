@@ -129,7 +129,7 @@ output.register_hook(extract)
 loss.backward()
 
 saved_grad = saved_grad.view(-1)
-for i in xrange(saved_grad.size(0)):
+for i in range(saved_grad.size(0)):
     if abs(saved_grad[i]) >= 0.001:
         print('%d : %f' % (i, saved_grad[i]))
 ```
@@ -150,14 +150,14 @@ y = m(x)
 
 w = m.weight.data.clone()
 gw = (2*x*y).data.clone()
-print('x = %f, y = %f' % (x.data[0][0], y.data[0][0]))
-print('before: m.weight = %f, m.bias = %f' % (m.weight.data[0][0], m.bias.data[0]))
+print('x = %f, y = %f' % (x.item()[0], y.item()[0]))
+print('before: m.weight = %f, m.bias = %f' % (m.weight.item()[0], m.bias.item()))
 loss = y**2
 loss.backward()
 optimizer.step()
-print('after: m.weight = %f, m.bias = %f' % (m.weight.data[0][0], m.bias.data[0]))
-print('m.weight.grad = %f, m.bias.grad = %f' % (m.weight.grad.data[0][0], m.bias.grad.data[0]))
-print('x = %f, y = %f' % (x.data[0][0], y.data[0][0]))
+print('after: m.weight = %f, m.bias = %f' % (m.weight.item()[0], m.bias.item()))
+print('m.weight.grad = %f, m.bias.grad = %f' % (m.weight.grad.item()[0], m.bias.grad.item()))
+print('x = %f, y = %f' % (x.item()[0], y.item()[0]))
 
 state_w = 0 
 state_w = state_w * momentum + gw + decay*w
