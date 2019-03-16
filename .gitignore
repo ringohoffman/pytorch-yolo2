@@ -6,3 +6,4 @@
 *.o
 *.so
 backup/
+data
