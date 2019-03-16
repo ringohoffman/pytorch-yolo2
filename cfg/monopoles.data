@@ -2,5 +2,5 @@ classes = 1
 train  = data/27182_train.txt
 valid  = data/27182_valid.txt
 names = data/monopoles.names
-backup = backupPT2
+backup = backup
 gpus  = 0

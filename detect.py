@@ -17,7 +17,7 @@ def detect(cfgfile, weightfile, imgfile):
     elif m.num_classes == 80:
         namesfile = 'data/coco.names'
     else:
-        namesfile = 'data/names'
+        namesfile = 'data/monopoles.names'
     
     use_cuda = 1
     if use_cuda:
@@ -49,7 +49,7 @@ def detect_cv2(cfgfile, weightfile, imgfile):
     elif m.num_classes == 80:
         namesfile = 'data/coco.names'
     else:
-        namesfile = 'data/names'
+        namesfile = 'data/monopoles.names'
     
     use_cuda = 1
     if use_cuda:
@@ -83,7 +83,7 @@ def detect_skimage(cfgfile, weightfile, imgfile):
     elif m.num_classes == 80:
         namesfile = 'data/coco.names'
     else:
-        namesfile = 'data/names'
+        namesfile = 'data/monopoles.names'
     
     use_cuda = 1
     if use_cuda:
