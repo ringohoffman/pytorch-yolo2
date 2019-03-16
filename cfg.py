@@ -53,7 +53,7 @@ def print_cfg(blocks):
             kernel_size = int(block['size'])
             stride = int(block['stride'])
             is_pad = int(block['pad'])
-            pad = (kernel_size-1)/2 if is_pad else 0
+            pad = (kernel_size-1)//2 if is_pad else 0
             width = (prev_width + 2*pad - kernel_size)/stride + 1
             height = (prev_height + 2*pad - kernel_size)/stride + 1
             print('%5d %-6s %4d  %d x %d / %d   %3d x %3d x%4d   ->   %3d x %3d x%4d' % (ind, 'conv', filters, kernel_size, kernel_size, stride, prev_width, prev_height, prev_filters, width, height, filters))
@@ -154,7 +154,10 @@ def load_conv(buf, start, conv_model):
     num_w = conv_model.weight.numel()
     num_b = conv_model.bias.numel()
     conv_model.bias.data.copy_(torch.from_numpy(buf[start:start+num_b]));   start = start + num_b
-    conv_model.weight.data.copy_(torch.from_numpy(buf[start:start+num_w])); start = start + num_w
+    conv_model.weight.data.copy_(torch.reshape(torch.from_numpy(buf[start:start + num_w]), (
+    conv_model.weight.shape[0], conv_model.weight.shape[1], conv_model.weight.shape[2], conv_model.weight.shape[3])));
+    start = start + num_w
+    #conv_model.weight.data.copy_(torch.from_numpy(buf[start:start+num_w])); start = start + num_w
     return start
 
 def save_conv(fp, conv_model):
@@ -172,7 +175,10 @@ def load_conv_bn(buf, start, conv_model, bn_model):
     bn_model.weight.data.copy_(torch.from_numpy(buf[start:start+num_b]));   start = start + num_b
     bn_model.running_mean.copy_(torch.from_numpy(buf[start:start+num_b]));  start = start + num_b
     bn_model.running_var.copy_(torch.from_numpy(buf[start:start+num_b]));   start = start + num_b
-    conv_model.weight.data.copy_(torch.from_numpy(buf[start:start+num_w])); start = start + num_w 
+    conv_model.weight.data.copy_(torch.reshape(torch.from_numpy(buf[start:start + num_w]), (
+    conv_model.weight.shape[0], conv_model.weight.shape[1], conv_model.weight.shape[2], conv_model.weight.shape[3])));
+    start = start + num_w
+    #conv_model.weight.data.copy_(torch.from_numpy(buf[start:start+num_w])); start = start + num_w
     return start
 
 def save_conv_bn(fp, conv_model, bn_model):
