@@ -122,34 +122,35 @@ def test(epoch):
     proposals   = 0.0
     correct     = 0.0
 
-    for batch_idx, (data, target) in enumerate(test_loader):
-        if use_cuda:
-            data = data.cuda()
-        data = Variable(data, volatile=True)
-        output = model(data).data
-        all_boxes = get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors)
-        if output.size(0) == 1:
-            all_boxes = [all_boxes]
-        for i in range(output.size(0)):
-            boxes = all_boxes[i]
-            boxes = nms(boxes, nms_thresh)
-            truths = target[i].view(-1, 5)
-            num_gts = truths_length(truths)
-     
-            total = total + num_gts
-    
-            for i in range(len(boxes)):
-                if boxes[i][4] > conf_thresh:
-                    proposals = proposals+1
+    with torch.no_grad():
+        for batch_idx, (data, target) in enumerate(test_loader):
+            if use_cuda:
+                data = data.cuda()
+            data = Variable(data)
+            output = model(data).data
+            all_boxes = get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors)
+            if output.size(0) == 1:
+                all_boxes = [all_boxes]
+            for i in range(output.size(0)):
+                boxes = all_boxes[i]
+                boxes = nms(boxes, nms_thresh)
+                truths = target[i].view(-1, 5)
+                num_gts = truths_length(truths)
+        
+                total = total + num_gts
+        
+                for i in range(len(boxes)):
+                    if boxes[i][4] > conf_thresh:
+                        proposals = proposals+1
 
-            for i in range(num_gts):
-                box_gt = [truths[i][1], truths[i][2], truths[i][3], truths[i][4], 1.0]
-                best_iou = 0
-                for j in range(len(boxes)):
-                    iou = bbox_iou(box_gt, boxes[j], x1y1x2y2=False)
-                    best_iou = max(iou, best_iou)
-                if best_iou > iou_thresh:
-                    correct = correct+1
+                for i in range(num_gts):
+                    box_gt = [truths[i][1], truths[i][2], truths[i][3], truths[i][4], 1.0]
+                    best_iou = 0
+                    for j in range(len(boxes)):
+                        iou = bbox_iou(box_gt, boxes[j], x1y1x2y2=False)
+                        best_iou = max(iou, best_iou)
+                    if best_iou > iou_thresh:
+                        correct = correct+1
 
     precision = 1.0*correct/(proposals+eps)
     recall = 1.0*correct/(total+eps)

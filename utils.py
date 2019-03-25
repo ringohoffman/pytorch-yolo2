@@ -137,7 +137,8 @@ def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, onl
 
     det_confs = torch.sigmoid(output[4])
 
-    cls_confs = torch.nn.Softmax()(Variable(output[5:5+num_classes].transpose(0,1))).data
+    X = Variable(output[5:5+num_classes].transpose(0,1))
+    cls_confs = torch.nn.Softmax(1)(X).data
     cls_max_confs, cls_max_ids = torch.max(cls_confs, 1)
     cls_max_confs = cls_max_confs.view(-1)
     cls_max_ids = cls_max_ids.view(-1)
@@ -206,7 +207,8 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
     width = img.shape[1]
     height = img.shape[0]
     for i in range(len(boxes)):
-        box = boxes[i]
+        box = [a.item() for a in boxes[i]]
+
         x1 = int(round((box[0] - box[2]/2.0) * width))
         y1 = int(round((box[1] - box[3]/2.0) * height))
         x2 = int(round((box[0] + box[2]/2.0) * width))
@@ -322,9 +324,12 @@ def do_detect(model, img, conf_thresh, nms_thresh, use_cuda=1):
         img = img.float().div(255.0)
     elif type(img) == np.ndarray: # cv2 image
         img = torch.from_numpy(img.transpose(2,0,1)).float().div(255.0).unsqueeze(0)
-    else:
-        print("unknow image type")
-        exit(-1)
+    # else:
+    #     print("unknown image type")
+    #     exit(-1)
+
+    if len(img.shape) == 3:
+        img = img.unsqueeze(0)
 
     t1 = time.time()
 
@@ -340,12 +345,13 @@ def do_detect(model, img, conf_thresh, nms_thresh, use_cuda=1):
     #print('')
     t3 = time.time()
 
-    boxes = get_region_boxes(output, conf_thresh, model.num_classes, model.anchors, model.num_anchors)[0]
+    boxes = get_region_boxes(output, conf_thresh, model.num_classes, model.anchors, model.num_anchors)
+
     #for j in range(len(boxes)):
     #    print(boxes[j])
     t4 = time.time()
 
-    boxes = nms(boxes, nms_thresh)
+    boxes = list(map(lambda x: nms(x, nms_thresh), boxes))
     t5 = time.time()
 
     if False:

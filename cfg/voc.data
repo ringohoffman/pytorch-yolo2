@@ -1,5 +1,0 @@
-train  = monopole_train.txt
-valid  = monopole_test.txt
-names = data/voc.names
-backup = backup
-gpus  = 0

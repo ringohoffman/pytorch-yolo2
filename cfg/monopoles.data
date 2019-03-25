@@ -1,6 +1,6 @@
 classes = 1
-train  = data/27182_train.txt
-valid  = data/27182_valid.txt
+train  = data/labels/46254/46254_train.txt
+valid  = data/labels/46254/46254_valid.txt
 names = data/monopoles.names
 backup = backup
 gpus  = 0
