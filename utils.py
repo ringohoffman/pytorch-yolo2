@@ -329,7 +329,9 @@ def do_detect(model, img, conf_thresh, nms_thresh, use_cuda=1):
     #     exit(-1)
 
     if len(img.shape) == 3:
-        img = img.unsqueeze(0)
+        img.unsqueeze(0)
+    
+    print(img.shape)
 
     t1 = time.time()
 
@@ -345,13 +347,12 @@ def do_detect(model, img, conf_thresh, nms_thresh, use_cuda=1):
     #print('')
     t3 = time.time()
 
-    boxes = get_region_boxes(output, conf_thresh, model.num_classes, model.anchors, model.num_anchors)
-
+    boxes = get_region_boxes(output, conf_thresh, model.num_classes, model.anchors, model.num_anchors)[0]
     #for j in range(len(boxes)):
     #    print(boxes[j])
     t4 = time.time()
 
-    boxes = list(map(lambda x: nms(x, nms_thresh), boxes))
+    boxes = nms(boxes, nms_thresh)
     t5 = time.time()
 
     if False:

@@ -2,7 +2,7 @@ from __future__ import print_function
 import sys
 if len(sys.argv) < 4:
     print('Usage:')
-    print('python eval.py datacfg cfgfile weight1 weight2 ...')
+    print('python3 eval.py datacfg cfgfile weight1 weight2 ...')
     exit()
 
 import time

@@ -47,6 +47,6 @@ if __name__ == '__main__':
         #demo('cfg/tiny-yolo-voc.cfg', 'tiny-yolo-voc.weights')
     else:
         print('Usage:')
-        print('    python demo.py cfgfile weightfile')
+        print('    python3 demo.py cfgfile weightfile')
         print('')
         print('    perform detection on camera')

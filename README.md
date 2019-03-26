@@ -20,7 +20,7 @@ Convert https://pjreddie.com/darknet/yolo/ into pytorch. This repository is tryi
 #### Detection Using A Pre-Trained Model
 ```
 wget http://pjreddie.com/media/files/yolo.weights
-python detect.py cfg/yolo.cfg yolo.weights data/dog.jpg
+python3 detect.py cfg/yolo.cfg yolo.weights data/dog.jpg
 ```
 You will see some output like this:
 ```
@@ -39,7 +39,7 @@ dog: 0.990524
 ---
 #### Real-Time Detection on a Webcam
 ```
-python demo.py cfg/tiny-yolo-voc.cfg tiny-yolo-voc.weights
+python3 demo.py cfg/tiny-yolo-voc.cfg tiny-yolo-voc.weights
 ```
 ---
 
@@ -56,7 +56,7 @@ tar xf VOCtest_06-Nov-2007.tar
 ##### Generate Labels for VOC
 ```
 wget http://pjreddie.com/media/files/voc_label.py
-python voc_label.py
+python3 voc_label.py
 cat 2007_train.txt 2007_val.txt 2012_*.txt > voc_train.txt
 ```
 ##### Modify Cfg for Pascal Data
@@ -74,16 +74,16 @@ wget http://pjreddie.com/media/files/darknet19_448.conv.23
 ```
 or run the following command:
 ```
-python partial.py cfg/darknet19_448.cfg darknet19_448.weights darknet19_448.conv.23 23
+python3 partial.py cfg/darknet19_448.cfg darknet19_448.weights darknet19_448.conv.23 23
 ```
 ##### Train The Model
 ```
-python train.py cfg/voc.data cfg/yolo-voc.cfg darknet19_448.conv.23
+python3 train.py cfg/voc.data cfg/yolo-voc.cfg darknet19_448.conv.23
 ```
 ##### Evaluate The Model
 ```
-python valid.py cfg/voc.data cfg/yolo-voc.cfg yolo-voc.weights
-python scripts/voc_eval.py results/comp4_det_test_
+python3 valid.py cfg/voc.data cfg/yolo-voc.cfg yolo-voc.weights
+python3 scripts/voc_eval.py results/comp4_det_test_
 ```
 mAP test on released models
 ```

@@ -85,4 +85,4 @@ if __name__ == '__main__':
         valid(datacfg, cfgfile, weightfile, outfile)
     else:
         print('Usage:')
-        print(' python valid.py datacfg cfgfile weightfile')
+        print(' python3 valid.py datacfg cfgfile weightfile')

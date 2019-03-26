@@ -79,5 +79,5 @@ if __name__ == '__main__':
         eval_list(cfgfile, weightfile, imglist)
     else:
         print('Usage:')
-        print('python recall.py cfgfile weightfile imglist')
-        #python recall.py test160.cfg backup/000022.weights face_test.txt
+        print('python3 recall.py cfgfile weightfile imglist')
+        #python3 recall.py test160.cfg backup/000022.weights face_test.txt

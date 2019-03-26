@@ -23,15 +23,14 @@ class MonopoleLoader(Dataset):
         tmp = []
         sorted_files = sorted(os.listdir(root))
         for f in sorted_files:
-            if f.split('.')[1] != "png":
+            if f.split('.')[-1] != "png":
                 continue
             tmp += [f]
         sorted_files = tmp
 
-        self.files = [[sorted_files[i + j*batch_size] for i in range(batch_size)] for j in range(ceil(len(sorted_files)/batch_size) - 1)]
-        
-        self.files += [[sorted_files[-i-1] for i in range(len(sorted_files)%batch_size)]]
-
+        #self.files = [[sorted_files[i + j*batch_size] for i in range(batch_size)] for j in range(ceil(len(sorted_files)/batch_size) - 1)]
+        #self.files += [[sorted_files[-i-1] for i in range(len(sorted_files)%batch_size)]]
+        self.files = [sorted_files[i] for i in range(len(sorted_files))]
         self.batch_size = batch_size
 
         if not (shape[0] or shape[1]):
@@ -44,11 +43,12 @@ class MonopoleLoader(Dataset):
     def __getitem__(self, index):
 
         data = []
-        for f in self.files[index]:
-            img = cv2.imread(os.path.join(self.root, f))
-            sized = cv2.resize(img, (self.shape[0], self.shape[1]))
-            sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
-            data += [sized]
+        #for f in self.files[index]:
+        img = cv2.imread(os.path.join(self.root, self.files[index]))
+        sized = cv2.resize(img, (self.shape[0], self.shape[1]))
+        sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
+
+        data += [sized]
 
         return torch.tensor(np.transpose(np.stack(data), (0,3,1,2))).float().div(255.0), self.files[index]
 
@@ -70,6 +70,70 @@ def dir_setup(imgfile):
         filename = imgfile.split("/")[-1].split('.')[0]
         if not os.path.isdir(os.path.join("predictions", filename)):
             os.mkdir(os.path.join("predictions", filename))
+
+def detect_cv2(cfgfile, weightfile, imgfile):
+    m = Darknet(cfgfile)
+
+    m.print_network()
+    m.load_weights(weightfile)
+    print('Loading weights from %s... Done!' % (weightfile))
+
+    if m.num_classes == 20:
+        namesfile = 'data/voc.names'
+    elif m.num_classes == 80:
+        namesfile = 'data/coco.names'
+    else:
+        namesfile = 'data/monopoles.names'
+    
+    use_cuda = 1
+    if use_cuda:
+        m.cuda()
+
+    class_names = load_class_names(namesfile)
+
+    dir_setup(imgfile)
+
+    if os.path.isdir(imgfile):
+
+        batch_size = 12
+        num_workers = 1
+        init_width        = m.width
+        init_height       = m.height
+
+        kwargs = {'num_workers': num_workers, 'pin_memory': True} if use_cuda else {}
+
+        data_loader = torch.utils.data.DataLoader(
+            MonopoleLoader(imgfile, 
+                           transform=transforms.Compose([
+                               transforms.ToTensor(),
+                           ]),
+            batch_size=batch_size, shape=(init_width, init_height)),
+            batch_size=batch_size, **kwargs)
+
+
+        imgfolder = imgfile.strip("/").split('/')[-1]
+        with open(os.path.join('predictions', imgfolder, '{}_list.txt'.format(imgfolder)), 'w') as out:
+
+            for data, files in data_loader:
+                if len(data.shape) > 4:
+                    data = data.squeeze()
+                elif len(data.shape) == 3:
+                    data = data.unsqueeze(0)
+                                
+                for i in range(1):
+                    start = time.time()
+                    boxes = do_detect(m, data, 0.5, 0.4, use_cuda)
+                    finish = time.time()
+                    if i == 0:
+                        print('%i images predicted in %f seconds.' % (len(files), (finish-start)))
+                
+                for bx, f in zip(boxes, files):
+                    if bx:
+                        out.write(os.path.join(imgfile, f) + '\n')
+                        imgname = f.split("/")[-1].split('.')[0]
+                        plot_boxes_cv2(cv2.imread(os.path.join(imgfile, f)), bx, savename=os.path.join('predictions', imgfolder, '{}.jpg'.format(imgname)), class_names=class_names)
+
+
 
 def detect(cfgfile, weightfile, imgfile):
 
@@ -156,79 +220,6 @@ def detect(cfgfile, weightfile, imgfile):
 
 
 
-def detect_cv2(cfgfile, weightfile, imgfile):
-    m = Darknet(cfgfile)
-
-    m.print_network()
-    m.load_weights(weightfile)
-    print('Loading weights from %s... Done!' % (weightfile))
-
-    if m.num_classes == 20:
-        namesfile = 'data/voc.names'
-    elif m.num_classes == 80:
-        namesfile = 'data/coco.names'
-    else:
-        namesfile = 'data/monopoles.names'
-    
-    use_cuda = 1
-    if use_cuda:
-        m.cuda()
-
-    class_names = load_class_names(namesfile)
-
-    dir_setup(imgfile)
-
-    if os.path.isdir(imgfile):
-
-        batch_size = 43
-        num_workers = 4
-        init_width        = m.width
-        init_height       = m.height
-
-        data_loader = torch.utils.data.DataLoader(
-            MonopoleLoader(imgfile, 
-                           transform=transforms.Compose([
-                               transforms.ToTensor(),
-                           ]),
-            batch_size=batch_size, shape=(init_width, init_height)))
-
-
-        imgfolder = imgfile.strip("/").split('/')[-1]
-        with open(os.path.join('predictions', imgfolder, '{}_list.txt'.format(imgfolder)), 'w') as out:
-
-            for data, files in data_loader:
-                if len(data.shape) > 4:
-                    data = data.squeeze()
-                elif len(data.shape) == 3:
-                    data = data.unsqueeze(0)
-                files = [e[0] for e in files]
-                                
-                for i in range(2):
-                    start = time.time()
-                    boxes = do_detect(m, data, 0.5, 0.4, use_cuda)
-                    finish = time.time()
-                    if i == 1:
-                        print('%i images predicted in %f seconds.' % (len(files), (finish-start)))
-
-                for bx, f in zip(boxes, files):
-                    if bx:
-                        out.write(os.path.join(imgfile, f) + '\n')
-                        imgname = f.split("/")[-1].split('.')[0]
-                        plot_boxes_cv2(cv2.imread(os.path.join(imgfile, f)), bx, savename=os.path.join('predictions', imgfolder, '{}.jpg'.format(imgname)), class_names=class_names)
-
-    # img = cv2.imread(imgfile)
-    # sized = cv2.resize(img, (m.width, m.height))
-    # sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
-    
-    # for i in range(2):
-    #     start = time.time()
-    #     boxes = do_detect(m, sized, 0.5, 0.4, use_cuda)
-    #     finish = time.time()
-    #     if i == 1:
-    #         print('%s: Predicted in %f seconds.' % (imgfile, (finish-start)))
-
-    # plot_boxes_cv2(img, boxes, savename='predictions.jpg', class_names=class_names)
-
 def detect_skimage(cfgfile, weightfile, imgfile):
     from skimage import io
     from skimage.transform import resize
@@ -275,5 +266,5 @@ if __name__ == '__main__':
         #detect_skimage(cfgfile, weightfile, imgfile)
     else:
         print('Usage: ')
-        print('  python detect.py cfgfile weightfile imgfile')
+        print('  python3 detect.py cfgfile weightfile imgfile')
         #detect('cfg/tiny-yolo-voc.cfg', 'tiny-yolo-voc.weights', 'data/person.jpg', version=1)

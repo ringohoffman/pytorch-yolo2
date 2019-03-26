@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw
 import sys
 from collections import OrderedDict
 from utils import do_detect, plot_boxes, load_class_names
-sys.path.append('/home/xiaohang/caffe/python')
+sys.path.append('/home/xiaohang/caffe/python3')
 sys.path.append('.')
 import caffe
 from region_loss import RegionLoss

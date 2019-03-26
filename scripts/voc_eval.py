@@ -201,7 +201,7 @@ def voc_eval(detpath,
     
 
 
-def _do_python_eval(res_prefix, output_dir = 'output'):
+def _do_python3_eval(res_prefix, output_dir = 'output'):
     _devkit_path = '/data/xiaohang/pytorch-yolo2/VOCdevkit'
     _year = '2007'
     _classes = ('__background__', # always index 0
