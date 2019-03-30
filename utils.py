@@ -18,7 +18,6 @@ def softmax(x):
     x = x/x.sum()
     return x
 
-
 def bbox_iou(box1, box2, x1y1x2y2=True):
     if x1y1x2y2:
         mx = min(box1[0], box2[0])
@@ -86,7 +85,6 @@ def bbox_ious(boxes1, boxes2, x1y1x2y2=True):
 def nms(boxes, nms_thresh):
     if len(boxes) == 0:
         return boxes
-
     det_confs = torch.zeros(len(boxes))
     for i in range(len(boxes)):
         det_confs[i] = 1-boxes[i][4]                
@@ -206,8 +204,8 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
 
     width = img.shape[1]
     height = img.shape[0]
-    for i in range(len(boxes)):
-        box = [a.item() for a in boxes[i]]
+    for i in range(len(boxes)//7):
+        box = [a.item() for a in boxes]
 
         x1 = int(round((box[0] - box[2]/2.0) * width))
         y1 = int(round((box[1] - box[3]/2.0) * height))
@@ -328,11 +326,6 @@ def do_detect(model, img, conf_thresh, nms_thresh, use_cuda=1):
     #     print("unknown image type")
     #     exit(-1)
 
-    if len(img.shape) == 3:
-        img.unsqueeze(0)
-    
-    print(img.shape)
-
     t1 = time.time()
 
     if use_cuda:
@@ -347,12 +340,12 @@ def do_detect(model, img, conf_thresh, nms_thresh, use_cuda=1):
     #print('')
     t3 = time.time()
 
-    boxes = get_region_boxes(output, conf_thresh, model.num_classes, model.anchors, model.num_anchors)[0]
+    boxes = get_region_boxes(output, conf_thresh, model.num_classes, model.anchors, model.num_anchors)
     #for j in range(len(boxes)):
     #    print(boxes[j])
     t4 = time.time()
 
-    boxes = nms(boxes, nms_thresh)
+    boxes = list(map(lambda x: nms(x, nms_thresh), boxes))
     t5 = time.time()
 
     if False:

@@ -1,6 +1,6 @@
 classes = 1
-train  = data/labels/46254/46254_train.txt
-valid  = data/labels/46254/46254_valid.txt
-names = data/monopoles.names
+train  = data/labels/000/000_train.txt
+valid  = data/labels/000/000_valid.txt
+names = cfg/monopoles.names
 backup = backup
 gpus  = 0

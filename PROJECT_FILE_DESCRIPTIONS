@@ -1,0 +1,55 @@
+./pytorch-yolo2
+    
+    ./backup
+        stores the weights of the model currently being run by train.py
+
+    ./bbox-label-tool
+        the labeling tool
+
+        important files:
+            main.py (can't be run remotely, I think)
+
+            Labels/convert_labels.py
+            Labels/renumber.py
+            Labels/count_monopoles.py
+
+            Images/
+
+    ./weights
+        stores the weights of some successful runs
+
+    ./cfg
+        stores the .cfg file for the model, which dictates the model architecture
+        also stores the .data which holds the class information
+        
+        important files:
+            monopoles.cfg
+            monopoles.data 
+
+    ./data
+        holds the images and labels for the datasets
+
+        important files:
+            images/
+            labels/
+
+    ./predictions
+        the results of inferencing. These contain images that the model predicts contains monopoles
+
+    important files:
+
+        detect.py
+            for inferencing. Give it a directory full of images to predict on and it will place
+            its predictions for in predictions
+        train.py
+
+
+./monopole-detection
+    
+    important files:
+        utils/scrape_images.py
+            this is how we collect new images of cities. It puts its results in scraped_images
+            I have been collecting 40k images from a city at a time
+
+./scraped_images
+    contains the scraped images of cities using Google maps

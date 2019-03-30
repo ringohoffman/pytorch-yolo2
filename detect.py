@@ -48,9 +48,7 @@ class MonopoleLoader(Dataset):
         sized = cv2.resize(img, (self.shape[0], self.shape[1]))
         sized = cv2.cvtColor(sized, cv2.COLOR_BGR2RGB)
 
-        data += [sized]
-
-        return torch.tensor(np.transpose(np.stack(data), (0,3,1,2))).float().div(255.0), self.files[index]
+        return torch.tensor(np.transpose(sized, (2,0,1))).float().div(255.0), self.files[index]
 
 
 def dir_setup(imgfile):
@@ -95,7 +93,7 @@ def detect_cv2(cfgfile, weightfile, imgfile):
 
     if os.path.isdir(imgfile):
 
-        batch_size = 12
+        batch_size = 32
         num_workers = 1
         init_width        = m.width
         init_height       = m.height
@@ -115,18 +113,15 @@ def detect_cv2(cfgfile, weightfile, imgfile):
         with open(os.path.join('predictions', imgfolder, '{}_list.txt'.format(imgfolder)), 'w') as out:
 
             for data, files in data_loader:
-                if len(data.shape) > 4:
-                    data = data.squeeze()
-                elif len(data.shape) == 3:
-                    data = data.unsqueeze(0)
-                                
+                if len(data.shape) == 3:
+                    data = data.view(1, *data.shape)
+                
                 for i in range(1):
                     start = time.time()
                     boxes = do_detect(m, data, 0.5, 0.4, use_cuda)
                     finish = time.time()
                     if i == 0:
                         print('%i images predicted in %f seconds.' % (len(files), (finish-start)))
-                
                 for bx, f in zip(boxes, files):
                     if bx:
                         out.write(os.path.join(imgfile, f) + '\n')
