@@ -101,12 +101,22 @@ if use_cuda:
 
 params_dict = dict(model.named_parameters())
 params = []
+
 for key, value in params_dict.items():
     if key.find('.bn') >= 0 or key.find('.bias') >= 0:
         params += [{'params': [value], 'weight_decay': 0.0}]
     else:
         params += [{'params': [value], 'weight_decay': decay*batch_size}]
+
+"""
+for name,child in model.named_children():
+    for name,param in child.named_parameters():
+        if not (29 <= int(name.split('.')[0]) <= 30):
+            param.requires_grad = False
+"""
+
 optimizer = optim.SGD(model.parameters(), lr=learning_rate/batch_size, momentum=momentum, dampening=0, weight_decay=decay*batch_size)
+# optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=learning_rate/batch_size, momentum=momentum, dampening=0, weight_decay=decay*batch_size)
 
 def adjust_learning_rate(optimizer, batch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""

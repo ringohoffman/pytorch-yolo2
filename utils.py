@@ -204,8 +204,8 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None):
 
     width = img.shape[1]
     height = img.shape[0]
-    for i in range(len(boxes)//7):
-        box = [a.item() for a in boxes]
+    for i in range(len(boxes)):
+        box = [a.item() for a in boxes[i]]
 
         x1 = int(round((box[0] - box[2]/2.0) * width))
         y1 = int(round((box[1] - box[3]/2.0) * height))

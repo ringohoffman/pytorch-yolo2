@@ -116,7 +116,7 @@ def detect_cv2(cfgfile, weightfile, imgfile):
                 if len(data.shape) == 3:
                     data = data.view(1, *data.shape)
                 
-                for i in range(1):
+                for i in range(2):
                     start = time.time()
                     boxes = do_detect(m, data, 0.5, 0.4, use_cuda)
                     finish = time.time()
