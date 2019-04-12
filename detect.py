@@ -51,7 +51,7 @@ class MonopoleLoader(Dataset):
         return torch.tensor(np.transpose(sized, (2,0,1))).float().div(255.0), self.files[index]
 
 
-def dir_setup(imgfile):
+def dir_setup(imgfile, weight_num):
     if os.getcwd() != "/home/ashwin/pytorch-yolo2":
         print("predict.py must be run from /home/ashwin/pytorch-yolo2\nExiting...")
         sys.exit(0)
@@ -59,9 +59,9 @@ def dir_setup(imgfile):
     # make a folder to put our predictions in if it does not yet exist
     if not os.path.isdir("./predictions"):
         os.mkdir("./predictions")
-    
+    print(imgfile)
     if os.path.isdir(imgfile):
-        imgfolder = imgfile.strip("/").split('/')[-1]
+        imgfolder = imgfile.strip("/").split('/')[-1] + "-" + weight_num
         if not os.path.isdir(os.path.join("predictions", imgfolder)):
             os.mkdir(os.path.join("predictions", imgfolder))
     elif imgfile.split("/")[-1].split('.')[1] == 'txt':
@@ -71,6 +71,8 @@ def dir_setup(imgfile):
 
 def detect_cv2(cfgfile, weightfile, imgfile):
     m = Darknet(cfgfile)
+
+    weight_num = weightfile.split('/')[-1].split('.')[0]
 
     m.print_network()
     m.load_weights(weightfile)
@@ -83,13 +85,15 @@ def detect_cv2(cfgfile, weightfile, imgfile):
     else:
         namesfile = 'data/monopoles.names'
     
+    device = "cuda:0"
+
     use_cuda = 1
     if use_cuda:
-        m.cuda()
+        m.cuda().to(device)
 
     class_names = load_class_names(namesfile)
 
-    dir_setup(imgfile)
+    dir_setup(imgfile, weight_num)
 
     if os.path.isdir(imgfile):
 
@@ -109,13 +113,14 @@ def detect_cv2(cfgfile, weightfile, imgfile):
             batch_size=batch_size, **kwargs)
 
 
-        imgfolder = imgfile.strip("/").split('/')[-1]
+        imgfolder = imgfile.strip("/").split('/')[-1] + "-" + weight_num
         with open(os.path.join('predictions', imgfolder, '{}_list.txt'.format(imgfolder)), 'w') as out:
 
             for data, files in data_loader:
                 if len(data.shape) == 3:
                     data = data.view(1, *data.shape)
-                
+                data = data.to(device)
+
                 for i in range(2):
                     start = time.time()
                     boxes = do_detect(m, data, 0.5, 0.4, use_cuda)
@@ -256,6 +261,9 @@ if __name__ == '__main__':
         cfgfile = sys.argv[1]
         weightfile = sys.argv[2]
         imgfile = sys.argv[3]
+        if imgfile[-1] == '/':
+            imgfile = imgfile[:-1]
+
         # detect(cfgfile, weightfile, imgfile)
         detect_cv2(cfgfile, weightfile, imgfile)
         #detect_skimage(cfgfile, weightfile, imgfile)

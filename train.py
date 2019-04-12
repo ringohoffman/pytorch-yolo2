@@ -206,7 +206,7 @@ def train(epoch):
     print('')
     t1 = time.time()
     logging('training with %f samples/s' % (len(train_loader.dataset)/(t1-t0)))
-    if (epoch+1) % save_interval == 0:
+    if (epoch+1) % save_interval == 0 or 25 <= epoch+1 <= 35:
         logging('save weights to %s/%06d.weights' % (backupdir, epoch+1))
         cur_model.seen = (epoch + 1) * len(train_loader.dataset)
         cur_model.save_weights('%s/%06d.weights' % (backupdir, epoch+1))
